@@ -8,9 +8,157 @@ output:
 theme: Antibes
 ---
 
+```{r imports, echo=FALSE, results='hide', comment=FALSE, message=FALSE}
+setwd(dir = "/home/joao/Documents/Data-Mining")
+source('Functions.R')
+train_data <- read.csv("data/train.csv", head=T,  na.strings=c("?"))
+```
+
+
 ## Introduction
 
-* 
-*
-*
+* Monitoring and forecasting forest fires in Portugal;
+
+* The several variables may influence the burnt area;
+
+* In 2003, Portugal faced the worst forest fire losing 8.6% of of the total area;
+
+* Elevation, slope or density are some of the specifications of the data set; 
+
+**Objective** : Explore and predicte the data of the forest.
+
+
+## Exploratory analysis of the data
+
+* Global Summary
+* Main Variables
+* Target Variable
+
+## Global Summary
+
+* Number of Columns: `r ncol(train_data)`.
+* Number of Rows: `r nrow(train_data)`.
+* Number of Data: `r ncol(train_data)*nrow(train_data)`.
+* Target Value: 1 (TotalBurntArea) - Numeric variable.
+* Number of Unknown Values: `r sum(apply(train_data, 1, function(x){any(is.na(x))}))`.
+
+## Global Summary (cont.)
+
+**Climate Variables** - The climatic conditions may affect the probability of a fire to occur;
+
+**Landscape Variables** - The landscape has been extensively associated with fire occurrence;
+
+**Socio-economic Variables** - Human have impact in historical fire patterns;
+
+**Topographic Variables** - The topographic features may influence the fire ignitions;
+
+
+## Main Variables 
+
+In the following table we have the **TOP5** main variables: 
+
+```{r gain_ratio, echo=FALSE}
+a <- gain.ratio(formula =  TotalBurntArea ~ ., train_data)
+a$attribute <- rownames(a)
+a <- head(a[order(a$attr_importance, decreasing =T ),],5)
+rownames(a) <- 1:nrow(a)
+pander(a, style = "grid")
+```
+
+## Main Variables (Number of outliers)
+```{r top5_vars, echo=FALSE, comment=NA}
+att <- a$attribute
+```
+
+```{r call_functions, echo=FALSE, results='hide'}
+nouts <- out_tax(train_data,att)
+stand_dev <- stand_dev(train_data,att)
+```
+
+* ELEV_MAX: `r nouts[1]`
+
+* Bio1: `r nouts[2]`
+
+* ELEV_MEAN: `r nouts[3]`
+
+* Bio7: `r nouts[4]`
+
+* DensPop01: `r nouts[5]`
+
+
+## Main Variables (Standard Deviation)
+* ELEV_MAX: `r stand_dev[1]`
+
+* Bio1: `r stand_dev[2]`
+
+* ELEV_MEAN: `r stand_dev[3]`
+
+* Bio7: `r stand_dev[4]`
+
+* DensPop01: `r stand_dev[5]`
+
+## Target Variable
+
+```{r tv_sum, echo=FALSE, comment=NA}
+tmp <-summary(train_data["TotalBurntArea"])
+prc <- summaryToDataFrame(tmp)
+pander(prc, style="grid")
+```
+
+## Target Variable (Number of outliers)
+```{r tv_out, echo=FALSE}
+outs <- out_tax(train_data,c("TotalBurntArea"))
+```
+
+* TotalBurntArea: `r outs[1]`
+
+We can see that more than 10% of the total burnt area values are considered outliers.
+
+## Target Variable (Total Area vs. Total Burnt Area)
+```{r times_burnt, echo=FALSE}
+tmp<-train_data[train_data$TA<train_data$TotalBurntArea,c("TA","TotalBurntArea")]
+ggplot(tmp, aes(factor(round(tmp$TotalBurntArea/tmp$TA)))) + geom_bar() + xlab("Times Burnt") + ggtitle("Times Total Area Burnt")
+```
+
+
+## Data Pre-Processing
+
+* Remove None importance Variables
+* Normalizing Value
+
+## Remove None importance Variables
+
+```{r non_importance_vars, echo=FALSE}
+nanration <- gain.ratio(formula =  TotalBurntArea ~ ., train_data)
+nanration$attribute <- rownames(nanration)
+nanration <- nanration[order(nanration$attr_importance, decreasing =T ),]
+nanration <- nanration[is.nan(nanration$attr_importance),]
+rownames(nanration) <- 1:nrow(nanration)
+pander(nanration, style = "grid")
+```
+
+
+```{r remove_ration, echo=FALSE, results='hide'}
+data <- ncol(train_data)*nrow(train_data)
+rmdata <- nrow(train_data)*(ncol(train_data)-nrow(nanration))
+perc <- round(((data-rmdata)/(data))*100,2)
+```
+
+* This pre-processing that does not prejudice the information analysis;
+* We reduce about `r perc`% of the total data.
+
+## Normalizing Value
+
+* Data normalization pre-processing we will use for the analisys;
+
+```{r normalize, echo=FALSE}
+norm.train_data <- scale(train_data[,])
+colnames(train_data) <- colnames(train_data)
+norm.train_data <- data.frame(norm.train_data)
+```
+
+```{r view_norm_data, echo=FALSE}
+head(train_data[,c(1:6)], 3)
+head(norm.train_data[,c(1:6)], 3)
+```
 
