@@ -600,14 +600,14 @@ Clustering is the process of grouping a set of data objects into multiple groups
 The k-means algorithm defines the centroid of a cluster as the mean value of the points within the cluster then iteratively improves the within-cluster variation. For each cluster, it computes the new mean using the objects assigned to the cluster in
 the previous iteration[@Han:2011:DMC:1972541].
 
-We used the following script to find the best k (from 2 to 10) value for clustering the data using the kmeans method:
+We used the following script to find the best k (from 2 to 10) value for clustering the data using kmeans:
 
-```{r}
+```{r k_means, echo=FALSE}
 set.seed(1234)
-d = dist(new_train_data[,-73])
+d = dist(train_data[,-81])
 avgS = c()
 for(k in 2:10){
-  cl = kmeans(new_train_data[,-73],centers=k,iter.max=300)
+  cl = kmeans(train_data[,-81],centers=k,iter.max=400)
   s = silhouette(cl$cluster,d)
   avgS = c(avgS,mean(s[,3]))
 }
@@ -615,16 +615,79 @@ for(k in 2:10){
 
 The best k is given by the silhouette coefficient closer to 1: 
 
-```{r, echo=FALSE, comment=""}
+```{r k_means_sil, echo=FALSE, comment=""}
 res = data.frame(nClusters=2:10,SilhCo=avgS)
 res[order(res$SilhCo,decreasing=TRUE),]
 ```
 
+##PAM Method:
+
+```{r pam, echo=FALSE}
+set.seed(1234)
+d = dist(train_data[,-81])
+avgS = c()
+for(n in 2:10){
+  cl = pam(train_data[,-81],k=n)
+  s = silhouette(cl$clustering,d)
+  avgS = c(avgS,mean(s[,3]))
+}
+```
+
+The best k is given by the silhouette coefficient closer to 1: 
+
+```{r pam_sil, echo=FALSE, comment=""}
+res = data.frame(nClusters=2:10,SilhCo=avgS)
+res[order(res$SilhCo,decreasing=TRUE),]
+```
+
+##Clara Method
+
+```{r clara, echo=FALSE}
+set.seed(1234)
+d = dist(train_data[,-81])
+avgS = c()
+for(k in 2:10){
+  cl = clara(train_data[,-81],k)
+  s = silhouette(cl$cluster,d)
+  avgS = c(avgS,mean(s[,3]))
+}
+```
+
+The best k is given by the silhouette coefficient closer to 1: 
+
+```{r clara_sil, echo=FALSE, comment=""}
+res = data.frame(nClusters=2:10,SilhCo=avgS)
+res[order(res$SilhCo,decreasing=TRUE),]
+```
+
+##Hierarchical Clustering Method:
+
+```{r hi, echo=FALSE}
+set.seed(1234)
+d = dist(scale(train_data[,-81]))
+avgS = c()
+for(k in 2:10){
+  cl = hclust(d)
+  c = cutree(cl,k)
+  s = silhouette(c,d)
+  avgS = c(avgS,mean(s[,3]))
+}
+```
+
+The best k is given by the silhouette coefficient closer to 1: 
+
+```{r hi_sil, echo=FALSE, comment=""}
+res = data.frame(nClusters=2:10,SilhCo=avgS)
+res[order(res$SilhCo,decreasing=TRUE),]
+```
+
+As we can see, the best silhouette coefficient result was using kmeans with 2 centers.
+
 If we plot the silhouette of the clustering using kmeans with the k=2 centers, we can see that we only get a very small percentage of cases in one of the clusters, and all the remaining cases in the other, this means that the distance of observations in the data set is very small.
 
-```{r, echo=FALSE}
-k2 = kmeans(new_train_data[,-73], centers=2, iter.max=300)
-s = silhouette(k2$cluster,dist(new_train_data[,-73]))
+```{r kplot, echo=FALSE, fig.height=7.3}
+k2 = kmeans(train_data[,-81], centers=2, iter.max=300)
+s = silhouette(k2$cluster,dist(train_data[,-81]))
 plot(s)
 ```
 

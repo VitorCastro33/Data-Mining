@@ -14,6 +14,16 @@ source('Functions.R')
 train_data <- read.csv("data/train.csv", head=T,  na.strings=c("?"))
 ```
 
+```{r trim_data, echo=FALSE}
+nanration <- gain.ratio(formula =  TotalBurntArea ~ ., train_data)
+nanration$attribute <- rownames(nanration)
+nanration <- nanration[order(nanration$attr_importance, decreasing =T ),]
+nanration <- nanration[is.nan(nanration$attr_importance),]
+rownames(nanration) <- 1:nrow(nanration)
+att_names <- nanration$attribute
+new_train_data <- train_data[,!(names(train_data) %in% att_names)]
+```
+
 
 ## Introduction
 
@@ -162,7 +172,6 @@ head(train_data[,c(1:6)], 3)
 head(norm.train_data[,c(1:6)], 3)
 ```
 
-
 ## Predictive Models
 
 In order to find the best regression model that can predict the target variable of the test data set with less error, we analysed the following forecasting models:
@@ -183,6 +192,52 @@ To evaluate the models we will use the performanceEstimation package that provid
 and arguments that allow us to change the values of parameters in order to check the best fit for an specific
 model.
 
+## Model performance
+
+| **Model**                        | **MAE ERROR** | **Parameters**                                                                           |
+| -------------------------------- |:-------------:| -----------------------------------------------------------------------------------------|
+| SVM (ksvm)                       |1732.284       |  **epsilon**:1e-09, **C**:1, **kernel**:rbfdot                                           |
+| SVM                              |1762.223       |  **cost**:1, **gamma**:0.01                                                              |
+| k-Nearest Neighbors              |1916.375       |   **scale**:TRUE, **k**:11, **distance**:1, **kernel**:triangular                        |
+| Multiple Linear Regression       |2310.785       |   Default Parameters                                                                     |
+| ANN                              |2393.626       |   **size**:2, **maxit**:200, **decay**:0.1, **scale**:TRUE, **trace**:FALSE, **linout**:1|
+| Random Forest                    |2393.626       | **ntree**:500, **nodesize**:5, **corr.bias**:FALSE, **mtry**:3                           |
+| Regression Trees                 |2802.628       |   **se**:1, **minsplit**:15                                                              |
+
+## Models Plot
+
+```{r total, echo=FALSE, warning=FALSE, comment=FALSE, comment=FALSE, message=FALSE, results='hide', dpi=100}
+total <- performanceEstimation(
+  PredTask(TotalBurntArea ~ ., new_train_data),
+  c(workflowVariants(learner="lm", pre="centralImp",post="onlyPos"),
+    workflowVariants(learner="rpartXse",
+                     learner.pars=list(se=1, minsplit=20)),
+    workflowVariants(learner="train.kknn",
+                     learner.pars=list(scale=T, k=13, distance=1, kernel="epanechnikov")),
+    workflowVariants(learner="svm",
+                     learner.pars=list(cost=1, gamma=0.01)),
+    workflowVariants(learner="ksvm",
+                     learner.pars=list(epsilon=10^-9, C=1, kernel="rbfdot")),
+    workflowVariants(learner="nnet",
+                     learner.pars=list(size=4, maxit=300, decay=0.4, scale=T, trace=F, linout=1)),
+    workflowVariants(learner="randomForest",
+                     learner.pars=list(ntree=250, nodesize=5, corr.bias=F, mtry=9))),
+  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+
+plot(total, ylab="Model", xlab="MAE Results")
+```
+
+## Conclusion
+
+**Best performance models**
+  * **SVM** (ksvm)
+    * MAE error: 1732.284
+    
+  * **SVM**
+    * MAE error: 1762.223
+    
+  * **k-Nearest Neighbors**
+    * MAE error: 1916.375
 
 ## Clustering
 
@@ -197,23 +252,38 @@ The following clustering methods were used to try to find different groups of ob
 
 Using a R script with the help of the silhouette function we could find the best number of clusters for each used method 
 
-| CLARA   |         |PAM      |         |hclust   |          |kmeans   |         |
-|---------|---------|---------|---------|---------|----------|---------|---------|
-|nClusters|SilhCo   |nClusters|SilhCo   |nClusters|SilhCo    |nClusters|SilhCo   |    
-|2        |0.7144933|2        |0.7336859|2        |0.55027091|2        |0.7791398|
-|4        |0.6361579|3        |0.6187632|3        |0.32391734|3        |0.6993844|
-|3        |0.6243904|4        |0.4812423|5        |0.17051099|4        |0.6888222|
-|5        |0.3102661|5        |0.4318594|4        |0.16893921|5        |0.5839630|
-|10       |0.2789919|6        |0.3595906|6        |0.09489308|6        |0.5492905|
-|9        |0.2749504|7        |0.3234947|7        |0.09160570|7        |0.3886676|
-|6        |0.2645142|9        |0.2750479|8        |0.08740959|8        |0.3868419|
-|7        |0.2329236|8        |0.2561567|10       |0.08135908|10       |0.3321750|
-|8        |0.2286001|10       |0.2560370|9        |0.07454503|9        |0.3175380|
+| CLARA   |         |PAM      |         |
+|---------|---------|---------|---------|
+|nClusters|SilhCo   |nClusters|SilhCo   |
+|2        |0.7144933|2        |0.7336859|
+|4        |0.6361579|3        |0.6187632|
+|3        |0.6243904|4        |0.4812423|
+|5        |0.3102661|5        |0.4318594|
+|10       |0.2789919|6        |0.3595906|
+|9        |0.2749504|7        |0.3234947|
+|6        |0.2645142|9        |0.2750479|
+|7        |0.2329236|8        |0.2561567|
+|8        |0.2286001|10       |0.2560370|
+
+## Clustering results (cont.)
+
+|hclust   |          |kmeans   |         |
+|---------|----------|---------|---------|
+|nClusters|SilhCo    |nClusters|SilhCo   | 
+|2        |0.55027091|2        |0.7791398|
+|3        |0.32391734|3        |0.6993844|
+|5        |0.17051099|4        |0.6888222|
+|4        |0.16893921|5        |0.5839630|
+|6        |0.09489308|6        |0.5492905|
+|7        |0.09160570|7        |0.3886676|
+|8        |0.08740959|8        |0.3868419|
+|10       |0.08135908|10       |0.3321750|
+|9        |0.07454503|9        |0.3175380|
 
 ## Silhouette Plot
 
 ```{r, echo=FALSE}
-k2 = kmeans(train_data[,-73], centers=2, iter.max=300)
-s = silhouette(k2$cluster,dist(train_data[,-73]))
+k2 = kmeans(new_train_data[,-73], centers=2, iter.max=300)
+s = silhouette(k2$cluster,dist(new_train_data[,-73]))
 plot(s)
 ```
