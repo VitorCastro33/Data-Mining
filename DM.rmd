@@ -594,9 +594,14 @@ plot(total, ylab="Model", xlab="MAE Results")
 \pagebreak
 
 #Clustering
+Clustering is the process of grouping a set of data objects into multiple groups or clusters so that objects within a cluster have high similarity, but are very dissimilar to objects in other clusters.
+
+##K-Means Method
+The k-means algorithm defines the centroid of a cluster as the mean value of the points within the cluster then iteratively improves the within-cluster variation. For each cluster, it computes the new mean using the objects assigned to the cluster in
+the previous iteration[@Han:2011:DMC:1972541].
 
 We used the following script to find the best k (from 2 to 10) value for clustering the data using the kmeans method:
-library(cluster)
+
 ```{r}
 set.seed(1234)
 d = dist(new_train_data[,-73])
@@ -610,7 +615,7 @@ for(k in 2:10){
 
 The best k is given by the silhouette coefficient closer to 1: 
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, comment=""}
 res = data.frame(nClusters=2:10,SilhCo=avgS)
 res[order(res$SilhCo,decreasing=TRUE),]
 ```
@@ -622,6 +627,8 @@ k2 = kmeans(new_train_data[,-73], centers=2, iter.max=300)
 s = silhouette(k2$cluster,dist(new_train_data[,-73]))
 plot(s)
 ```
+
+\pagebreak
 
 #References
 

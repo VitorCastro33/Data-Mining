@@ -162,3 +162,58 @@ head(train_data[,c(1:6)], 3)
 head(norm.train_data[,c(1:6)], 3)
 ```
 
+
+## Predictive Models
+
+In order to find the best regression model that can predict the target variable of the test data set with less error, we analysed the following forecasting models:
+
+* Multiple Linear Regression
+* Regression Trees
+* K-Nearest Neighbors (KNNs)
+* Support Vector Machines (SVMs)
+* Artificial Neural Networks (ANNs)
+* Random Forest (Ensembles)
+
+## Model comparison
+
+The metric evaluation to be considered for these forecasts is the MAE - Mean Absolute Error. We use a
+cross validation method with 2 repetitions of 3 folds.
+
+To evaluate the models we will use the performanceEstimation package that provides a set of functions
+and arguments that allow us to change the values of parameters in order to check the best fit for an specific
+model.
+
+
+## Clustering
+
+The following clustering methods were used to try to find different groups of observations present in the data set:
+
+* Clustering Large Applications (CLARA)
+* Partitioning Around Medoids (PAM)
+* Hierarchical Clustering
+* K-Means Clustering
+
+## Clustering results
+
+Using a R script with the help of the silhouette function we could find the best number of clusters for each used method 
+
+| CLARA   |         |PAM      |         |hclust   |          |kmeans   |         |
+|---------|---------|---------|---------|---------|----------|---------|---------|
+|nClusters|SilhCo   |nClusters|SilhCo   |nClusters|SilhCo    |nClusters|SilhCo   |    
+|2        |0.7144933|2        |0.7336859|2        |0.55027091|2        |0.7791398|
+|4        |0.6361579|3        |0.6187632|3        |0.32391734|3        |0.6993844|
+|3        |0.6243904|4        |0.4812423|5        |0.17051099|4        |0.6888222|
+|5        |0.3102661|5        |0.4318594|4        |0.16893921|5        |0.5839630|
+|10       |0.2789919|6        |0.3595906|6        |0.09489308|6        |0.5492905|
+|9        |0.2749504|7        |0.3234947|7        |0.09160570|7        |0.3886676|
+|6        |0.2645142|9        |0.2750479|8        |0.08740959|8        |0.3868419|
+|7        |0.2329236|8        |0.2561567|10       |0.08135908|10       |0.3321750|
+|8        |0.2286001|10       |0.2560370|9        |0.07454503|9        |0.3175380|
+
+## Silhouette Plot
+
+```{r, echo=FALSE}
+k2 = kmeans(train_data[,-73], centers=2, iter.max=300)
+s = silhouette(k2$cluster,dist(train_data[,-73]))
+plot(s)
+```

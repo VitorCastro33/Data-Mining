@@ -19,6 +19,7 @@ library(kknn)
 library(packrat)
 library(randomForest)
 library(gbm)
+library(cluster)
 
 out_tax <- function(data, att){
   vector = c()
