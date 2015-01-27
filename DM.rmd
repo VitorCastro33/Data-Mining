@@ -313,7 +313,7 @@ lm <- performanceEstimation(
   PredTask(TotalBurntArea ~ ., new_train_data),
   workflowVariants("standardWF",
                    learner="lm", pre="centralImp",post="onlyPos"),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 lm_mae <- topPerformers(lm)$new_train_data.TotalBurntArea[2]$Estimate
 ```
 
@@ -356,7 +356,7 @@ rt <- performanceEstimation(
                    learner="rpartXse",
                    learner.pars=list(se=c(1,2,3),
                                      minsplit=c(1,15,20))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 rt_mae <- topPerformers(rt)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(rt)
 params_rt <- param_lis(prc)
@@ -394,7 +394,7 @@ knn <- performanceEstimation(
                                        k=c(5,7,9,11,13),
                                        distance=c(1,2,3),
                                        kernel=c("epanechnikov","triangular")))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 knn_mae <- topPerformers(knn)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(knn)
 params_knn <- param_lis(prc)
@@ -429,7 +429,7 @@ svm <- performanceEstimation(
   c(workflowVariants(learner="svm",
                      learner.pars=list(cost=c(1,10),
                                        gamma=c(0.1,0.01,1)))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 svm_mae <- topPerformers(svm)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(svm)
 params_svm <- param_lis(prc)
@@ -458,7 +458,7 @@ svm2 <- performanceEstimation(
                      learner.pars=list(epsilon=c(0.01, 10^-9),
                                        C=c(1,2),
                                        kernel=c("rbfdot","laplacedot", "besseldot")))),
-EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 svm2_mae <- topPerformers(svm2)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(svm2)
 params_svm2 <- param_lis(prc)
@@ -500,7 +500,7 @@ nnet <- performanceEstimation(
                                        scale=T,
                                        trace = F, 
                                        linout = 1))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 nnet_mae <- topPerformers(nnet)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(nnet)
 params_nnet <- param_lis(prc)
@@ -536,7 +536,7 @@ rd <- performanceEstimation(
                                        nodesize=c(5,10),
                                        corr.bias=c(T, F),
                                        mtry=c(3,6,9)))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 rd_mae <- topPerformers(nnet)$new_train_data.TotalBurntArea[2]$Estimate
 prc <- getWF(rd)
 params_rd <- param_lis(prc)
@@ -586,7 +586,7 @@ total <- performanceEstimation(
                      learner.pars=list(size=4, maxit=300, decay=0.4, scale=T, trace=F, linout=1)),
     workflowVariants(learner="randomForest",
                      learner.pars=list(ntree=250, nodesize=5, corr.bias=F, mtry=9))),
-  EstimationTask(metrics="mae",method=CV(nReps=1,nFolds=2)))
+  EstimationTask(metrics="mae",method=CV(nReps=2,nFolds=3)))
 
 plot(total, ylab="Model", xlab="MAE Results")
 ```
